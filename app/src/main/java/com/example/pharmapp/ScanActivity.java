@@ -12,9 +12,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.google.zxing.BinaryBitmap;
 import com.google.zxing.Result;
+
+import java.util.ArrayList;
+import java.util.TreeSet;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
@@ -24,16 +29,19 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
 
     private static final int REQUEST_CAMERA = 1;
     private ZXingScannerView scannerView;
-    private static int camId = Camera.CameraInfo.CAMERA_FACING_BACK;
-
+    private static ArrayList<String> scanResults;
+    private static TreeSet<String> scanResultsU;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        scannerView = new ZXingScannerView(this);
-        setContentView(scannerView);
-        int currentApiVersion = Build.VERSION.SDK_INT;
 
+
+        scannerView = new ZXingScannerView(this);
+        int currentApiVersion = Build.VERSION.SDK_INT;
+        scanResults = new ArrayList<>();
+        scanResultsU = new TreeSet<>();
+        setContentView(scannerView);
         if(currentApiVersion >=  Build.VERSION_CODES.M)
         {
             if(checkPermission())
@@ -128,7 +136,7 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
         Log.d("QRCodeScanner", result.getText());
         Log.d("QRCodeScanner", result.getBarcodeFormat().toString());
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Scan Result");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
@@ -145,6 +153,29 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
         });
         builder.setMessage(result.getText());
         AlertDialog alert1 = builder.create();
-        alert1.show();
+        alert1.show();*/
+        int size = scanResultsU.size();
+        scanResultsU.add(myResult);
+        if(size == scanResultsU.size()){
+            Toast.makeText(getApplicationContext(), "Already scanned!", Toast.LENGTH_LONG).show();
+        }else{
+            Toast.makeText(getApplicationContext(), "Scanned: " + myResult, Toast.LENGTH_LONG).show();
+        }
+        scannerView.resumeCameraPreview(ScanActivity.this);
+
     }
+
+    public static ArrayList<String> getScanResults()
+    {
+        if (scanResults == null)
+        {
+            return null;
+        }
+        scanResults.clear();
+        for (String result: scanResultsU) {
+            scanResults.add(result);
+        }
+        return scanResults;
+    }
+
 }
